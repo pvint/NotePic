@@ -5,6 +5,7 @@ package ca.dotslash.pvint.notepic;
  */
 
         import java.io.IOException;
+        import java.util.List;
 
         import android.content.Context;
         import android.hardware.Camera;
@@ -77,5 +78,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         // mCamera.release();
 
     }
+
+
 }
 
