@@ -279,17 +279,7 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    public void initialize() {
-        cameraPreview = (LinearLayout) findViewById(R.id.camera_preview);
-        //mPreview = new CameraPreview(myContext, mCamera);
-        cameraPreview.addView(mPreview);
 
-//        capture = (Button) findViewById(R.id.button_capture);
-//        capture.setOnClickListener(captrureListener);
-//
-//        switchCamera = (Button) findViewById(R.id.button_ChangeCamera);
-//        switchCamera.setOnClickListener(switchCameraListener);
-    }
 
     private int findFrontFacingCamera() {
         int cameraId = -1;
