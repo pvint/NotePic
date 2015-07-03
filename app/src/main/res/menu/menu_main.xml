@@ -12,6 +12,13 @@
         android:title="@string/toolbox"/>
 
     <item
+        android:id="@+id/action_palette"
+        android:orderInCategory="90"
+        app:showAsAction="ifRoom"
+        android:icon="@mipmap/ic_brush"
+        android:title="@string/palette"/>
+
+    <item
         android:id="@+id/action_camera"
         android:orderInCategory="80"
         app:showAsAction="ifRoom"
@@ -24,6 +31,13 @@
         app:showAsAction="ifRoom"
         android:icon="@mipmap/ic_save"
         android:title="@string/save"/>
+
+    <item
+        android:id="@+id/action_refresh"
+        android:orderInCategory="60"
+        app:showAsAction="ifRoom"
+        android:icon="@mipmap/ic_refresh"
+        android:title="@string/refresh"/>
 
     <item
         android:id="@+id/action_undo"

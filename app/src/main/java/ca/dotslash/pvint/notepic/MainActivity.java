@@ -1,15 +1,20 @@
 package ca.dotslash.pvint.notepic;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Context;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
@@ -30,6 +35,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -38,6 +44,7 @@ import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -64,6 +71,12 @@ public class MainActivity extends ActionBarActivity {
 
     private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     Uri imageUri;
+
+    // drawing stuff
+    private DrawingView drawView;
+    private HSVColorPicker cpd;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -126,6 +139,19 @@ public class MainActivity extends ActionBarActivity {
         //photoIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);    // MyFileContentProvider.CONTENT_URI
         //photoIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
         //photoIntent.putExtra(MediaStore.EXTRA_OUTPUT, getPhotoFileUri(photoFilename));
+
+
+        drawView = (DrawingView)findViewById(R.id.drawing);
+        //drawView.setColor(color);
+
+        cpd = new HSVColorPicker( MainActivity.this, 0xFF4488CC, new HSVColorPicker.OnColorSelectedListener() {
+            @Override
+            public void colorSelected(Integer color) {
+                // Do something with the selected color
+            }
+        });
+        cpd.setTitle("Pick a color");
+        //cpd.show();
 
     }
 
@@ -233,6 +259,14 @@ public class MainActivity extends ActionBarActivity {
                 // Settings menu
                 break;
 
+            case R.id.action_palette:
+                // Colour picker
+                cpd.show();
+                int c = cpd.getColor();
+                drawView.setPaintColor(c);
+                Toast toast = Toast.makeText(myContext, "Color: " + Integer.toString(c), Toast.LENGTH_LONG);
+                toast.show();
+                break;
             case R.id.action_toolbox:
                 // Open toolbox menu
                 break;
@@ -249,7 +283,80 @@ public class MainActivity extends ActionBarActivity {
 
             case R.id.action_save:
                 // Save image
+                AlertDialog.Builder saveDialog = new AlertDialog.Builder(this);
+                saveDialog.setTitle("Save drawing");
+                saveDialog.setMessage("Save drawing to device Gallery?");
+                saveDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener(){
+                    public void onClick(DialogInterface dialog, int which) {
+                        //save drawing
+                        drawView.setDrawingCacheEnabled(true);
+                        imageView.setDrawingCacheEnabled(true);
+
+//                        String imgSaved = MediaStore.Images.Media.insertImage(
+//                                getContentResolver(), drawView.getDrawingCache(),
+//                                UUID.randomUUID().toString()+".png", "drawing");
+
+//                        Bitmap myImage = BitmapFactory.decodeByteArray(imageData, 0,
+//                                imageData.length, options);
+//                        Bitmap mutableBitmap = myImage.copy(Bitmap.Config.ARGB_8888, true);
+
+                        Bitmap mBitmap = imageView.getDrawingCache();
+                        Paint paint = new Paint();
+                        Canvas canvas = new Canvas(mBitmap);
+
+                        drawView.setDrawingCacheEnabled(true);
+                        Bitmap viewCapture = Bitmap.createBitmap(drawView.getDrawingCache());
+                        drawView.setDrawingCacheEnabled(false);
+                        canvas.drawBitmap(viewCapture, 0, 0, paint);
+
+                        FileOutputStream fileOutputStream = null;
+                        try {
+                            fileOutputStream = new FileOutputStream("/storage/sdcard0/NotePic_OUT.jpeg");
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+
+                        BufferedOutputStream bos = new BufferedOutputStream(fileOutputStream);
+                        mBitmap.compress(Bitmap.CompressFormat.JPEG, 90, bos);
+
+                        /*if(imgSaved!=null) {
+                            Toast savedToast = Toast.makeText(getApplicationContext(),
+                                    "Drawing saved to Gallery!", Toast.LENGTH_SHORT);
+                            savedToast.show();
+                        }
+                        else {
+                            Toast unsavedToast = Toast.makeText(getApplicationContext(),
+                                    "Oops! Image could not be saved.", Toast.LENGTH_SHORT);
+                            unsavedToast.show();
+                        }*/
+                        drawView.destroyDrawingCache();
+                    }
+                });
+                saveDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+                saveDialog.show();
                 break;
+
+            case R.id.action_refresh:
+                // clear the canvas
+                AlertDialog.Builder newDialog = new AlertDialog.Builder(this);
+                newDialog.setTitle("New drawing");
+                newDialog.setMessage("Start new drawing (you will lose the current drawing)?");
+                newDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener(){
+                    public void onClick(DialogInterface dialog, int which){
+                        drawView.startNew();
+                        dialog.dismiss();
+                    }
+                });
+                newDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
+                    public void onClick(DialogInterface dialog, int which){
+                        dialog.cancel();
+                    }
+                });
+                newDialog.show();
 
         }
 
