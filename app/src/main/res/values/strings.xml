@@ -9,4 +9,9 @@
     <string name="save">Save</string>
     <string name="refresh">Refresh</string>
     <string name="palette">Palette</string>
+    <string name="sml">Small</string>
+    <string name="med">Medium</string>
+    <string name="lrg">Large</string>
+    <string name="xlrg">X-Large</string>
+    <string name="paint">Paint Colour</string>
 </resources>

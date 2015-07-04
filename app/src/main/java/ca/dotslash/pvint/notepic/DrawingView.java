@@ -25,11 +25,12 @@ public class DrawingView extends View {
     //canvas bitmap
     private Bitmap canvasBitmap;
 
-    private float brushSize;
+    private float brushSize, lastBrushSize;
 
     public DrawingView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
+        brushSize = 20;
         setupDrawing();
     }
 
@@ -73,9 +74,17 @@ public class DrawingView extends View {
         return true;
     }
 
+    public void setBrushSize(float s)
+    {
+        lastBrushSize = brushSize;
+        brushSize = s;
+        drawPaint.setStrokeWidth(brushSize);
+    }
+
     public void setPaintColor(int c)
     {
         paintColor = c;
+        drawPaint.setColor(paintColor);
     }
     private void setupDrawing(){
         //get drawing area setup for interaction
@@ -85,7 +94,7 @@ public class DrawingView extends View {
         drawPaint.setColor(paintColor);
 
         drawPaint.setAntiAlias(true);
-        drawPaint.setStrokeWidth(20);
+        drawPaint.setStrokeWidth(brushSize);
         drawPaint.setStyle(Paint.Style.STROKE);
         drawPaint.setStrokeJoin(Paint.Join.ROUND);
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
