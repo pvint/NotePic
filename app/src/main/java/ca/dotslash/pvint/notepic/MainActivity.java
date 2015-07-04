@@ -69,8 +69,9 @@ public class MainActivity extends ActionBarActivity {
     private int screenWidth;
     private int screenHeight;
 
-    public String photoFilename = "photo.jpeg";
+
     public final String APP_TAG = "NotePic";
+    private File imageFile;
 
 
 
@@ -103,9 +104,10 @@ public class MainActivity extends ActionBarActivity {
         screenWidth = size.x;
         screenHeight = size.y;
 
+        imageFile = new File (Environment.getExternalStorageDirectory(),APP_TAG + "/tmp.jpeg");
+Log.d(APP_TAG, imageFile.getPath());
         imageView = (ImageView) findViewById(R.id.imageView);
-        Drawable d = Drawable.createFromPath("/storage/sdcard0/test.jpg");
-        //imageView = (ImageView) findViewById(R.id.imageView);
+        Drawable d = Drawable.createFromPath( imageFile.getPath().toString());
         imageView.setImageDrawable(d);
 
 
@@ -113,7 +115,7 @@ public class MainActivity extends ActionBarActivity {
 
 //create parameters for Intent with filename
         values = new ContentValues();
-        values.put(MediaStore.Images.Media.TITLE, photoFilename);
+        values.put(MediaStore.Images.Media.TITLE, imageFile.getPath().toString());
         values.put(MediaStore.Images.Media.DESCRIPTION, "Image capture by camera");
 //imageUri is the current activity attribute, define and save it for later usage (also in onSaveInstanceState)
         imageUri = getContentResolver().insert(
@@ -121,10 +123,7 @@ public class MainActivity extends ActionBarActivity {
 //create new Intent
 
         photoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        File file = new File(Environment
-                .getExternalStorageDirectory(),
-                "test.jpg");
-        imageUri = Uri.fromFile(file);
+        imageUri = Uri.fromFile(imageFile);
 
         photoIntent.putExtra(MediaStore.EXTRA_OUTPUT,
                 imageUri);
@@ -370,7 +369,7 @@ public class MainActivity extends ActionBarActivity {
 
         if (requestCode == 0) { //CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                Drawable d = Drawable.createFromPath("/storage/sdcard0/test.jpg");
+                Drawable d = Drawable.createFromPath(imageFile.getPath().toString());
                 //imageView = (ImageView) findViewById(R.id.imageView);
                 imageView.setImageDrawable( d );
             } else if (resultCode == RESULT_CANCELED) {
@@ -511,7 +510,9 @@ public class MainActivity extends ActionBarActivity {
 
                         FileOutputStream fileOutputStream = null;
                         try {
-                            fileOutputStream = new FileOutputStream("/storage/sdcard0/NotePic_OUT.jpeg");
+                            //fileOutputStream = new FileOutputStream("/storage/sdcard0/NotePic_OUT.jpeg");
+                            String f = getOutputMediaFilePath();
+                            fileOutputStream = new FileOutputStream( f );
                         } catch (FileNotFoundException e) {
                             e.printStackTrace();
                         }
@@ -655,7 +656,7 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
                 //make a new picture file
-                File pictureFile = getOutputMediaFile();
+                File pictureFile = imageFile;
 
                 if (pictureFile == null) {
                     return;
@@ -687,25 +688,31 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    private static File getOutputMediaFile() {
+    private String getOutputMediaFilePath() {
         //make a new file directory inside the "sdcard" folder
-        File mediaStorageDir = new File("/sdcard/", "NotePic");
+        //String mediaStorageDir = Environment.getExternalStorageDirectory() + "/NotePic";
+        //android.os.Environment.DIRECTORY_DCIM
+        String mediaStorageDir = Environment.getExternalStorageDirectory() + "/" + android.os.Environment.DIRECTORY_DCIM + "/NotePic";
 
         //if this "JCGCamera folder does not exist
-        if (!mediaStorageDir.exists()) {
+        File f = new File(mediaStorageDir);
+        if (!f.exists()) {
             //if you cannot make this folder return
-            if (!mediaStorageDir.mkdirs()) {
+            if (!f.mkdirs()) {
                 return null;
             }
         }
+
 
         //take the current timeStamp
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         File mediaFile;
         //and make a media file:
-        mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
+        mediaStorageDir = mediaStorageDir + "/NotePic_" + timeStamp + ".jpeg";
+        Toast.makeText(this, mediaStorageDir, Toast.LENGTH_LONG).show();
+        Log.d(APP_TAG, mediaStorageDir);
 
-        return mediaFile;
+        return mediaStorageDir;
     }
 
 
