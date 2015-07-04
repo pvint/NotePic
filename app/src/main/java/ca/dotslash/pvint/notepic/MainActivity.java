@@ -453,16 +453,13 @@ public class MainActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+
 
         switch (id) {
-            case R.id.action_settings:
+            /*case R.id.action_settings:
                 // Settings menu
                 break;
-
+*/
             case R.id.action_palette:
                 // Colour picker
                 /*cpd.show();  // This is not working correctly... just using a simple 16 colour palette for now
