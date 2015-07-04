@@ -108,12 +108,7 @@ public class MainActivity extends ActionBarActivity {
         imageView.setImageDrawable(d);
 
 
-        // FIXME TESTING
-        File zfile = new File(Environment.getExternalStorageDirectory() + File.separator + "test.jpg");
-        //Uri uri = Uri.fromFile( file );
-// BOOM        imageView.setImageBitmap(BitmapFactory.decodeFile( "/storage/sdcard0/test.jpg"));
 
-        File imgFile = new File("/storage/sdcard0/test.jpg");
 
 //create parameters for Intent with filename
         values = new ContentValues();
@@ -129,26 +124,16 @@ public class MainActivity extends ActionBarActivity {
                 .getExternalStorageDirectory(),
                 "test.jpg");
         imageUri = Uri.fromFile(file);
-        Log.d(APP_TAG, "outputFileUri intent"
-                + imageUri);
+
         photoIntent.putExtra(MediaStore.EXTRA_OUTPUT,
                 imageUri);
-        //photoIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);    // MyFileContentProvider.CONTENT_URI
-        //photoIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
-        //photoIntent.putExtra(MediaStore.EXTRA_OUTPUT, getPhotoFileUri(photoFilename));
+
 
 
         drawView = (DrawingView) findViewById(R.id.drawing);
         //drawView.setColor(color);
 
-        cpd = new HSVColorPicker(MainActivity.this, 0xFF4488CC, new HSVColorPicker.OnColorSelectedListener() {
-            @Override
-            public void colorSelected(Integer color) {
-                // Do something with the selected color
-            }
-        });
-        cpd.setTitle("Pick a color");
-        //cpd.show();
+
 
         // set up the brush button listeners etc
         smallBrush = getResources().getInteger(R.integer.small_size);
@@ -566,28 +551,6 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public static File convertImageUriToFile (Uri imageUri, Activity activity)  {
-        Cursor cursor = null;
-        try {
-            String [] proj={MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID, MediaStore.Images.ImageColumns.ORIENTATION};
-            cursor = activity.managedQuery( imageUri,
-                    proj, // Which columns to return
-                    null,       // WHERE clause; which rows to return (all rows)
-                    null,       // WHERE clause selection arguments (none)
-                    null); // Order-by clause (ascending by name)
-            int file_ColumnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-            int orientation_ColumnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.ORIENTATION);
-            if (cursor.moveToFirst()) {
-                String orientation =  cursor.getString(orientation_ColumnIndex);
-                return new File(cursor.getString(file_ColumnIndex));
-            }
-            return null;
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-    }
 
 
 
