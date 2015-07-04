@@ -3,6 +3,7 @@ package ca.dotslash.pvint.notepic;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PorterDuff;
@@ -24,6 +25,9 @@ public class DrawingView extends View {
     private Canvas drawCanvas;
     //canvas bitmap
     private Bitmap canvasBitmap;
+    private String text;
+    private Paint textPaint;
+    private float textSize;
 
     private float brushSize, lastBrushSize;
 
@@ -31,6 +35,8 @@ public class DrawingView extends View {
         super(context, attrs);
 
         brushSize = 20;
+        textSize = 20.0f;
+        text = "";
         setupDrawing();
     }
 
@@ -48,6 +54,12 @@ public class DrawingView extends View {
         //draw view
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
         canvas.drawPath(drawPath, drawPaint);
+
+        if (text != "")
+        {
+            canvas.drawText(text, 0, 0, textPaint);
+            text = "";
+        }
     }
 
     @Override
@@ -105,6 +117,28 @@ public class DrawingView extends View {
     public void startNew(){
         drawCanvas.drawColor(0, PorterDuff.Mode.CLEAR);
         invalidate();
+    }
+
+    public void drawText( String t )
+    {
+        drawCanvas.drawText("Some Text", 100, 125, drawPaint); // nope
+    }
+
+    // Text stuff
+    public void paintText( String text )
+    {
+        this.text = text;
+        this.textPaint = new Paint();
+
+        textPaint.setColor( paintColor );
+        textPaint.setTextSize(textSize);
+        textPaint.setAntiAlias(true);
+        textPaint.setFakeBoldText(true);
+        textPaint.setShadowLayer( 6.0f, 0.0f, 0.0f, Color.BLACK);
+        textPaint.setStyle( Paint.Style.FILL);
+        textPaint.setTextAlign( Paint.Align.LEFT);
+
+
     }
 
 }

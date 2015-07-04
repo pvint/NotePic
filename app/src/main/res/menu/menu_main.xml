@@ -25,6 +25,13 @@
         android:icon="@mipmap/ic_camera"
         android:title="@string/camera"/>
 
+<!--    <item
+        android:id="@+id/action_folder"
+        android:orderInCategory="81"
+        app:showAsAction="always"
+        android:icon="@mipmap/ic_folder"
+        android:title="Folder" />-->
+
     <item
         android:id="@+id/action_save"
         android:orderInCategory="60"

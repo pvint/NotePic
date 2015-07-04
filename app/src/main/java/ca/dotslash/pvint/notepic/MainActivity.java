@@ -24,6 +24,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.TextPaint;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
@@ -342,6 +343,9 @@ public class MainActivity extends ActionBarActivity {
             }
 
         });
+
+
+
     }
 
         // Returns the Uri for a photo stored on disk given the fileName
@@ -461,6 +465,9 @@ public class MainActivity extends ActionBarActivity {
 
             case R.id.action_undo:
                 // undo last action
+                // FIXME
+                // TextPaint Test
+                drawView.paintText("hey");
                 break;
 
             case R.id.action_camera:
@@ -468,6 +475,11 @@ public class MainActivity extends ActionBarActivity {
 
                 startActivityForResult(photoIntent, 0); //CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
                 break;
+
+           /* case R.id.action_folder:
+                // get image from gallery
+                //zzzzzZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
+                break;*/
 
             case R.id.action_save:
                 // Save image
