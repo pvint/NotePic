@@ -7,9 +7,12 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PorterDuff;
+import android.text.Layout;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 
 /**
  * Created by pvint on 01/07/15.
@@ -25,9 +28,13 @@ public class DrawingView extends View {
     private Canvas drawCanvas;
     //canvas bitmap
     private Bitmap canvasBitmap;
-    private String text;
+    public String text;
     private Paint textPaint;
     private float textSize;
+
+
+    public boolean placeText = false;
+    public float textX, textY;
 
     private float brushSize, lastBrushSize;
 
@@ -55,11 +62,26 @@ public class DrawingView extends View {
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
         canvas.drawPath(drawPath, drawPaint);
 
-        if (text != "")
+/*        if (text != "")
         {
             canvas.drawText(text, 0, 0, textPaint);
             text = "";
-        }
+        }*/
+    }
+
+    public void drawText( Context ctx ) {
+
+
+        ImageView i = (ImageView) findViewById(R.id.imageTextView);
+        TextDrawable textDrawable = new TextDrawable(ctx);
+        textDrawable.setText(text);
+        textDrawable.setTextAlign(Layout.Alignment.ALIGN_CENTER);
+        textDrawable.setTextColor(getPaintColor());
+        // position textDrawable.set
+        textDrawable.left = textX;
+        textDrawable.top = textY;
+
+        i.setImageDrawable(textDrawable);
     }
 
     @Override
@@ -70,7 +92,22 @@ public class DrawingView extends View {
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                drawPath.moveTo(touchX, touchY);
+                if ( placeText == true )
+                {
+                    // return text coords
+                    textX = touchX;
+                    textY = touchY;
+                    placeText = false;
+                    drawPath.reset();
+                    //drawText(text);
+
+
+
+                    break;
+                }
+                else {
+                    drawPath.moveTo(touchX, touchY);
+                }
                 break;
             case MotionEvent.ACTION_MOVE:
                 drawPath.lineTo(touchX, touchY);
@@ -98,6 +135,12 @@ public class DrawingView extends View {
         paintColor = c;
         drawPaint.setColor(paintColor);
     }
+
+    public int getPaintColor()
+    {
+        return drawPaint.getColor();
+
+    }
     private void setupDrawing(){
         //get drawing area setup for interaction
         drawPath = new Path();
@@ -119,10 +162,10 @@ public class DrawingView extends View {
         invalidate();
     }
 
-    public void drawText( String t )
-    {
-        drawCanvas.drawText("Some Text", 100, 125, drawPaint); // nope
-    }
+//    public void drawText( String t )
+//    {
+//        drawCanvas.drawText("Some Text", 100, 125, drawPaint); // nope
+//    }
 
     // Text stuff
     public void paintText( String text )

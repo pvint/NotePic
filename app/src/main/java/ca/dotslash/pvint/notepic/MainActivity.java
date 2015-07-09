@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,6 +18,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.net.Uri;
@@ -24,18 +26,24 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.InputType;
+import android.text.Layout;
 import android.text.TextPaint;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.view.SurfaceView;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import java.io.BufferedOutputStream;
@@ -64,6 +72,7 @@ public class MainActivity extends ActionBarActivity {
 
     private ContentValues values;
     private Intent photoIntent;
+    private Intent galleryIntent;
     private ImageView imageView;
 
     private int screenWidth;
@@ -72,7 +81,6 @@ public class MainActivity extends ActionBarActivity {
 
     public final String APP_TAG = "NotePic";
     private File imageFile;
-
 
 
     private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
@@ -85,6 +93,8 @@ public class MainActivity extends ActionBarActivity {
     private float smallBrush, mediumBrush, largeBrush, xlargeBrush;
 
     public Dialog brushDialog, colorDialog;
+    private AlertDialog.Builder textDialog;
+    private Dialog td;
 
 
     @Override
@@ -104,13 +114,11 @@ public class MainActivity extends ActionBarActivity {
         screenWidth = size.x;
         screenHeight = size.y;
 
-        imageFile = new File (Environment.getExternalStorageDirectory(),APP_TAG + "/tmp.jpeg");
-Log.d(APP_TAG, imageFile.getPath());
+        imageFile = new File(Environment.getExternalStorageDirectory(), APP_TAG + "/tmp.jpeg");
+        Log.d(APP_TAG, imageFile.getPath());
         imageView = (ImageView) findViewById(R.id.imageView);
-        Drawable d = Drawable.createFromPath( imageFile.getPath().toString());
+        Drawable d = Drawable.createFromPath(imageFile.getPath().toString());
         imageView.setImageDrawable(d);
-
-
 
 
 //create parameters for Intent with filename
@@ -128,11 +136,12 @@ Log.d(APP_TAG, imageFile.getPath());
         photoIntent.putExtra(MediaStore.EXTRA_OUTPUT,
                 imageUri);
 
-
+        galleryIntent = new Intent(Intent.ACTION_GET_CONTENT);
+        galleryIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        galleryIntent.setType("image/*");
 
         drawView = (DrawingView) findViewById(R.id.drawing);
         //drawView.setColor(color);
-
 
 
         // set up the brush button listeners etc
@@ -344,17 +353,63 @@ Log.d(APP_TAG, imageFile.getPath());
         });
 
 
+        // Text input dialog
+        textDialog = new AlertDialog.Builder(this);
+        td = textDialog.create();
+
+
+        textDialog.setTitle("Enter text");
+
+        final EditText textInput = new EditText(this);
+        textInput.setInputType(InputType.TYPE_CLASS_TEXT);
+        if ( textInput.getParent() == null)
+            textDialog.setView(textInput);
+
+        textDialog.setPositiveButton("Place Text", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                drawView.text = textInput.getText().toString();
+
+                dialog.cancel();
+                td.dismiss();
+
+            }
+        });
+        textDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // cancel
+                dialog.cancel();
+                td.dismiss();
+            }
+        });
 
     }
 
-        // Returns the Uri for a photo stored on disk given the fileName
+
+    public void drawText() {
+
+
+        ImageView i = (ImageView) findViewById(R.id.imageTextView);
+        TextDrawable textDrawable = new TextDrawable(this);
+        textDrawable.setText(drawView.text);
+        textDrawable.setTextAlign(Layout.Alignment.ALIGN_CENTER);
+        textDrawable.setTextColor(drawView.getPaintColor());
+//        textDrawable.top = 300;
+//        textDrawable.left = 300;
+
+
+        i.setImageDrawable(textDrawable);
+    }
+
+    // Returns the Uri for a photo stored on disk given the fileName
     public Uri getPhotoFileUri(String fileName) {
         // Get safe storage directory for photos
         File mediaStorageDir = new File(
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), APP_TAG);
 
         // Create the storage directory if it does not exist
-        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()){
+        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()) {
             Log.d(APP_TAG, "failed to create directory");
         }
 
@@ -367,11 +422,11 @@ Log.d(APP_TAG, imageFile.getPath());
         Log.d(APP_TAG, RESULT_OK + " Result: " + resultCode);
         Log.d(APP_TAG, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE + " Request: " + requestCode);
 
-        if (requestCode == 0) { //CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
+        if (requestCode == 1) { //CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 Drawable d = Drawable.createFromPath(imageFile.getPath().toString());
                 //imageView = (ImageView) findViewById(R.id.imageView);
-                imageView.setImageDrawable( d );
+                imageView.setImageDrawable(d);
             } else if (resultCode == RESULT_CANCELED) {
                 Toast.makeText(this, "Cancelled - Picture was not taken", Toast.LENGTH_SHORT).show();
 
@@ -379,6 +434,11 @@ Log.d(APP_TAG, imageFile.getPath());
                 Toast.makeText(this, "Picture was not taken", Toast.LENGTH_SHORT).show();
             }
         }
+/*        else if ( requestCode == 1 )
+        {
+            Log.d(APP_TAG, data.getData().toString());
+        }*/
+
     }
 
 
@@ -427,12 +487,61 @@ Log.d(APP_TAG, imageFile.getPath());
         }
         return inSampleSize;
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
+
+    private void drawText(String text, float left, float top)
+    {
+        ImageView i = (ImageView) findViewById(R.id.imageTextView);
+        TextDrawable textDrawable = new TextDrawable( this );
+        textDrawable.setText(text);
+        textDrawable.setTextAlign(Layout.Alignment.ALIGN_CENTER);
+        textDrawable.setTextColor(drawView.getPaintColor());
+
+
+        // position textDrawable.set
+
+        i.setImageDrawable(textDrawable);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+//detect user touch
+        float touchX = event.getX();
+        float touchY = event.getY();
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                if (drawView.placeText == true) {
+                    // return text coords
+
+                    drawView.placeText = false;
+                    drawText();
+
+
+
+                }
+        }
+        return false;
+    }
+
+/*    private void drawText( String t ) {
+
+
+        ImageView i = (ImageView) findViewById(R.id.imageTextView);
+        TextDrawable textDrawable = new TextDrawable(this);
+        textDrawable.setText( t );
+        textDrawable.setTextAlign(Layout.Alignment.ALIGN_CENTER);
+        textDrawable.setTextColor(drawView.getPaintColor());
+
+        i.setImageDrawable(textDrawable);
+    }*/
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -466,18 +575,54 @@ Log.d(APP_TAG, imageFile.getPath());
                 // undo last action
                 // FIXME
                 // TextPaint Test
-                drawView.paintText("hey");
+                //drawView.paintText("hey");
+
+                // gallery view test
+                /*Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_VIEW);
+                intent.setDataAndType(Uri.parse("file://" + getOutputMediaDir()), "image*//*");
+                startActivity(intent);*/
+             /*   int RESULT_GALLERY = 0;
+
+                Intent galleryIntent = new Intent(
+                        Intent.ACTION_PICK,
+                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(galleryIntent , RESULT_GALLERY );
+                break;*/
+
+                //startActivityForResult(galleryIntent, 0);
+
+                // Testing adding text via buttons
+                RelativeLayout relativeLayout = (RelativeLayout) findViewById(R.id.imageLayout);
+                Button btn = new Button( this );
+                btn.setText("Testing Button");
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                params.leftMargin = 200;
+                params.topMargin = 150;
+                relativeLayout.addView(btn, params);
+
+
+                // test bitmap mod
+//                Bitmap bmp =drawTextToBitmap(this, R.id.imageView,"Hello Android");
+//
+//                imageView.setImageBitmap(bmp);
+
+                drawView.placeText = true;
+
+                // only works once.... still exists in parent view?
+                textDialog.show();
+
                 break;
 
             case R.id.action_camera:
                 // prompt to take new picture
 
-                startActivityForResult(photoIntent, 0); //CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+                startActivityForResult(photoIntent, 1); //CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
                 break;
 
-           /* case R.id.action_folder:
+/*            case R.id.action_folder:
                 // get image from gallery
-                //zzzzzZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
+                startActivityForResult(galleryIntent, 0);
                 break;*/
 
             case R.id.action_save:
@@ -563,7 +708,6 @@ Log.d(APP_TAG, imageFile.getPath());
 
         return super.onOptionsItemSelected(item);
     }
-
 
 
 
@@ -688,11 +832,13 @@ Log.d(APP_TAG, imageFile.getPath());
         }
     }
 
+    private String getOutputMediaDir()
+    {
+        return Environment.getExternalStorageDirectory() + "/" + android.os.Environment.DIRECTORY_DCIM + "/NotePic";
+
+    }
     private String getOutputMediaFilePath() {
-        //make a new file directory inside the "sdcard" folder
-        //String mediaStorageDir = Environment.getExternalStorageDirectory() + "/NotePic";
-        //android.os.Environment.DIRECTORY_DCIM
-        String mediaStorageDir = Environment.getExternalStorageDirectory() + "/" + android.os.Environment.DIRECTORY_DCIM + "/NotePic";
+        String mediaStorageDir = getOutputMediaDir();
 
         //if this "JCGCamera folder does not exist
         File f = new File(mediaStorageDir);

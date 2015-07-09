@@ -17,6 +17,13 @@
             android:scaleType="centerInside"
             android:id="@+id/imageView" />
 
+        <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:adjustViewBounds="true"
+            android:scaleType="centerInside"
+            android:id="@+id/imageTextView" />
+
         <ca.dotslash.pvint.notepic.DrawingView
             android:id="@+id/drawing"
             android:layout_width="fill_parent"
